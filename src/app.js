@@ -1,30 +1,20 @@
 const express = require('express');
 const app = express();
 
-app.use("/user",(req,res,next)=>{
-    console.log("Response1");
-     //res.send("Response1");
+app.use("/",(req,res,next)=>{
+    console.log("Act like as a middleware");
     next();
-    
-},(req,res,next)=>{
-    console.log("Response 2");
-    //res.send("Response2");
+})
+
+app.get("/user",(req,res,next)=>{
+    console.log("Handling / user route"); 
     next();
-    
 },(req,res,next)=>{
-    console.log("Response 3");
-    //res.send("Response3");
-    next();
-    
-},(req,res,next)=>{
-    console.log("Response 4");
-    // res.send("Response4");
-    next();
-    
-},(req,res,next)=>{
-     console.log("Response 5");
-    res.send("Response5");
-    
+    console.log("1st route handler");
+    res.send("1st route Handler")
+}, (req,res,next)=> {
+    console.log("2nd Route Handler");
+    res.send("2nd Route handler");
 })
 
 app.listen(3000, () => {
