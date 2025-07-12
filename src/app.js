@@ -25,6 +25,22 @@ app.delete("/admin/delete",(req,res)=>{
     
     res.send("Deleted all data");
 })
+// First of all for error handling you have to use try catch
+app.get("/getUserData",(req,res) => {
+    // try{
+        throw new Error("fdada");
+        res.send("User Data Sent")
+    // }catch(err){
+    //     res.status(500).send("some error occured");
+    // }
+    
+});
+// But for globally error we can configure commonly one route
+app.use("/",(err,req,res,next) => {
+    if(err){
+        res.status(500).send("Something went wrong");
+    }
+})
 
 app.listen(3000, () => {
   console.log("Server is listening on port 3000");
