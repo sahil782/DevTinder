@@ -1,20 +1,29 @@
 const express = require('express');
 const app = express();
+const {adminAuth,userAuth} = require('./middlewares/auth')
+// so Basically before the res.send if request goes to multiple routes then all they act like as a middleware its all middleware chain.
+app.use("/admin",adminAuth)
 
-app.use("/",(req,res,next)=>{
-    console.log("Act like as a middleware");
+// you can write middleware even in the route path also
+app.all("/user/specific",userAuth,(req,res,next)=>{
+    console.log("1st attempt");
     next();
+    
+},(req,res)=>{
+    console.log("2nd attempt");
+    res.send("2nd attempted passed");
 })
 
-app.get("/user",(req,res,next)=>{
-    console.log("Handling / user route"); 
-    next();
-},(req,res,next)=>{
-    console.log("1st route handler");
-    res.send("1st route Handler")
-}, (req,res,next)=> {
-    console.log("2nd Route Handler");
-    res.send("2nd Route handler");
+app.get("/admin/getData",(req,res)=>{
+    console.log("Sent All Data");
+    
+    res.send("Sent All Data");
+})
+
+app.delete("/admin/delete",(req,res)=>{
+    console.log("Delete All Data");
+    
+    res.send("Deleted all data");
 })
 
 app.listen(3000, () => {
