@@ -2,14 +2,18 @@ const express = require('express');
 const app = express();
 const connectDB = require("./config/database");
 const User = require("./models/user")
-
+User.init().then(() => {
+  console.log("Indexes ensured");
+}).catch(err => {
+  console.error("Index error:", err);
+});
 
 app.use(express.json());
 app.post("/signup",async (req,res)=>{
-    console.log(req.body);
+    // console.log(req.body);
     
     const user = new User(req.body);
-    // console.log(user); return false;
+    // console.log(user);
     
     try{
         await user.save();
@@ -84,17 +88,27 @@ app.delete("/user", async (req,res) => {
 
 // Update the user
 
-app.patch("/user",async (req,res)=> {
+app.patch("/user/:userId",async (req,res)=> {
 
-    const userId = req.body.userId;
+    const userId = req.params?.userId;
+    //const userEmail = req.body.email;
     try{
         const data = req.body;
-        const user = await User.findByIdAndUpdate({_id:userId},data, {returnDocument:'before'});
+        const Allowed_updates = ["age","email","gender","skills","photoUrl"];
+        const is_updated_allowed = Object.keys(data).every((k) => Allowed_updates.includes(k));
+        if(!is_updated_allowed){
+            throw new Error("Update Not allowed")
+        }
+        if(data?.skills.length>10){
+            throw new Error("Skill length should not be greater than 10");
+        }
+        const user = await User.findByIdAndUpdate({_id:userId},data, {returnDocument:'before',runValidators:true});
+        // const user = await User.findOneAndUpdate({email:userEmail},data,{returnDocument:'after',runValidators:true});
         console.log(user);
         res.send("User updated successfully");
-        
+
     }catch (err){
-        res.send(`Error updating the user ${err.message}`);
+        res.status(400).send(`Error updating the user ${err.message}`);
     }
 })
 
