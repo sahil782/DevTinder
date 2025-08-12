@@ -1,7 +1,10 @@
 const express = require('express');
 const app = express();
 const connectDB = require("./config/database");
-const User = require("./models/user")
+const User = require("./models/user");
+const bcrypt = require('bcrypt');
+const validation = require("./helpers/validationCustom.js");
+const {validateSignupData} = validation;
 User.init().then(() => {
   console.log("Indexes ensured");
 }).catch(err => {
@@ -10,18 +13,52 @@ User.init().then(() => {
 
 app.use(express.json());
 app.post("/signup",async (req,res)=>{
-    // console.log(req.body);
-    
-    const user = new User(req.body);
-    // console.log(user);
-    
     try{
+        //validate of data
+        validateSignupData(req.body);
+        // console.log(req.body);
+        const {firstName, email,age, gender,skills,photoUrl,password} = req.body;
+        const passwordHash = await bcrypt.hash(password,10);
+        // console.log(passwordHash); return false;
+        //  console.log(passwordHash); return false;
+        
+        const user = new User({
+            firstName,
+            email,
+            age,
+            gender,
+            skills,
+            photoUrl,
+            password : passwordHash
+        });
+        // console.log(user);
         await user.save();
         res.status(201).send("User saved successfully");
     }catch(err){
         res.status(400).send(`Error saving the user ${err.message}`);
     }
 })
+
+app.post("/login",async (req,res)=>{
+    try{
+        const {email,password} = req.body;
+        const checkUser = await User.findOne({email:email});
+        console.log(checkUser);
+        
+        if(!checkUser){
+            throw new Error("User not found in our DB");
+        }
+        const isPassword = await bcrypt.compare(password,checkUser.password);
+        if(isPassword){
+            res.send("User Login successfully");
+        }else{
+            throw new Error("Password not matched");
+        }
+
+    }catch(err){
+        res.status(400).send(`Error : ${err.message}`);
+    }
+});
 
 app.get("/user", async (req,res) => {
     const userEmail = req.body.email;
